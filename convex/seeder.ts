@@ -13,16 +13,27 @@ export const seed = mutation({
       "Read 10 pages of a book",
       "Go for a 20-minute run",
       "Organize desk",
-      "Meditate for 5 minutes"
+      "Meditate for 5 minutes",
     ];
 
+    // 👇 fetch existing users
+    const users = await ctx.db.query("users").collect();
+
+    if (users.length === 0) {
+      throw new Error("No users found. Seed users first before todos.");
+    }
+
     for (const taskText of initialTasks) {
+      // assign random user
+      const randomUser = users[Math.floor(Math.random() * users.length)];
+
       await ctx.db.insert("todos", {
         text: taskText,
-        isCompleted: Math.random() > 0.7, // Randomly mark some as completed
+        isCompleted: Math.random() > 0.7,
+        userId: randomUser._id, // ✅ REQUIRED RELATION
       });
     }
-    
-    return "Successfully seeded 10 tasks!";
+
+    return "Successfully seeded 10 relational tasks!";
   },
 });
